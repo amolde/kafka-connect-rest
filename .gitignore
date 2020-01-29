@@ -11,9 +11,9 @@ build/
 .ipr
 
 # Eclipse
-.classpath
-.project
-.settings/
+# .classpath
+# .project
+# .settings/
 
 # Documentation build output
 /docs/_build
