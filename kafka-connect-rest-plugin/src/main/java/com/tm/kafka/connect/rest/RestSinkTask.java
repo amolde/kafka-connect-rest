@@ -1,5 +1,6 @@
 package com.tm.kafka.connect.rest;
 
+import com.tm.kafka.connect.rest.filter.MessageFilter;
 import com.tm.kafka.connect.rest.http.Request;
 import com.tm.kafka.connect.rest.http.Response;
 import com.tm.kafka.connect.rest.http.executor.RequestExecutor;
@@ -29,6 +30,7 @@ public class RestSinkTask extends SinkTask {
   private RequestExecutor executor;
   private ResponseHandler responseHandler;
   private String taskName = "";
+  private MessageFilter messageFilter;
 
   @Override
   public void start(Map<String, String> map) {
@@ -40,6 +42,7 @@ public class RestSinkTask extends SinkTask {
     maxRetries = connectorConfig.getMaxRetries();
     responseHandler = connectorConfig.getResponseHandler();
     executor = connectorConfig.getRequestExecutor();
+    messageFilter = connectorConfig.getMessageFilter();
   }
 
   @Override
@@ -50,6 +53,10 @@ public class RestSinkTask extends SinkTask {
       while (maxRetries < 0 || retries-- >= 0) {
         try {
           String payload = (String) record.value();
+          if(messageFilter != null && !messageFilter.matches(payload)) {
+            log.error("RED RED RED", payload);
+            return;
+          }
           Request request = requestFactory.createRequest(payload, headers);
 
           Map<String, String> headers = request.getHeaders();

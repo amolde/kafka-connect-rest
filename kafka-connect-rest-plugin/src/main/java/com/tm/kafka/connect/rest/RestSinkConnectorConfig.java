@@ -1,6 +1,8 @@
 package com.tm.kafka.connect.rest;
 
 
+import com.tm.kafka.connect.rest.config.*;
+import com.tm.kafka.connect.rest.filter.MessageFilter;
 import com.tm.kafka.connect.rest.http.executor.RequestExecutor;
 import com.tm.kafka.connect.rest.http.handler.DefaultResponseHandler;
 import com.tm.kafka.connect.rest.http.handler.ResponseHandler;
@@ -68,17 +70,23 @@ public class RestSinkConnectorConfig extends AbstractConfig {
   private static final String SINK_DATE_FORMAT_DOC = "Date format for interpolation. The default is MM-dd-yyyy HH:mm:ss.SSS";
   private static final String SINK_DATE_FORMAT_DEFAULT = "MM-dd-yyyy HH:mm:ss.SSS";
 
+  public static final String SINK_MESSAGE_FILTER_CONFIG = "rest.sink.message.filter.class";
+  private static final String SINK_MESSAGE_FILTER_DOC = "The message filter class for REST sink connector.";
+  private static final String SINK_MESSAGE_FILTER_DISPLAY = "Message filter class for REST sink connector.";
+  private static final String SINK_MESSAGE_FILTER_DEFAULT = "com.tm.kafka.connect.rest.filter.PassthroughMessageFilter";
+
   private static final long SINK_RETRY_BACKOFF_DEFAULT = 5000L;
 
 
   private final Map<String, String> requestHeaders;
   private RequestExecutor requestExecutor;
-
+  private final MessageFilter messageFilter;
 
   protected RestSinkConnectorConfig(ConfigDef config, Map<String, String> parsedConfig) {
     super(config, parsedConfig);
 
     requestExecutor = this.getConfiguredInstance(SINK_REQUEST_EXECUTOR_CONFIG, RequestExecutor.class);
+    messageFilter = this.getConfiguredInstance(SINK_MESSAGE_FILTER_CONFIG, MessageFilter.class);
 
     requestHeaders = getHeaders().stream()
       .map(a -> a.split(":", 2))
@@ -184,6 +192,18 @@ public class RestSinkConnectorConfig extends AbstractConfig {
         ++orderInGroup,
         ConfigDef.Width.NONE,
         SINK_DATE_FORMAT_DISPLAY)
+
+        .define(SINK_MESSAGE_FILTER_CONFIG,
+        Type.CLASS,
+        SINK_MESSAGE_FILTER_DEFAULT,
+        new InstanceOfValidator(MessageFilter.class),
+        Importance.HIGH,
+        SINK_MESSAGE_FILTER_DOC,
+        group,
+        ++orderInGroup,
+        ConfigDef.Width.SHORT,
+        SINK_MESSAGE_FILTER_DISPLAY,
+        new ServiceProviderInterfaceRecommender<>(MessageFilter.class))
       ;
   }
 
@@ -213,6 +233,10 @@ public class RestSinkConnectorConfig extends AbstractConfig {
 
   public RequestExecutor getRequestExecutor() {
     return requestExecutor;
+  }
+
+  public MessageFilter getMessageFilter() {
+    return messageFilter;
   }
 
   public ResponseHandler getResponseHandler() {

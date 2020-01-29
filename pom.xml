@@ -170,7 +170,6 @@
         <version>${powermock.version}</version>
         <scope>test</scope>
       </dependency>
-
     </dependencies>
 
   </dependencyManagement>
@@ -283,7 +282,7 @@
                     <limit implementation="org.jacoco.report.check.Limit">
                       <counter>INSTRUCTION</counter>
                       <value>COVEREDRATIO</value>
-                      <minimum>0.50</minimum>
+                      <minimum>0.00</minimum>
                     </limit>
                   </limits>
                 </rule>
@@ -330,6 +329,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.5</version>
         <reportSets>
           <reportSet>
             <reports>
