@@ -1,7 +1,8 @@
 package org.apache.kafka.connect.transforms;
 
+import static org.apache.kafka.connect.transforms.util.Requirements.requireStruct;
+
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,9 +15,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 
-import org.apache.kafka.common.cache.Cache;
-import org.apache.kafka.common.cache.LRUCache;
-import org.apache.kafka.common.cache.SynchronizedCache;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.connect.connector.ConnectRecord;
@@ -25,14 +23,9 @@ import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.json.JsonConverter;
-import org.apache.kafka.connect.sink.SinkRecord;
-import org.apache.kafka.connect.transforms.util.SchemaUtil;
 import org.apache.kafka.connect.transforms.util.SimpleConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.kafka.connect.transforms.util.Requirements.requireMap;
-import static org.apache.kafka.connect.transforms.util.Requirements.requireStruct;
 
 public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transformation<R> {
 
@@ -96,7 +89,7 @@ public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transfo
     }
 
     template = config.getString(TEMPLATE_CONFIG);
-    transformedJsonFieldName = config.getString(PROCESS_FLAG_NAME_CONFIG);
+    transformedJsonFieldName = config.getString(TRANSFORMED_JSON_FIELD_NAME_CONFIG);
     processFlagTemplate = config.getString(PROCESS_FLAG_TEMPLATE_CONFIG);
     processFlagFieldName = config.getString(PROCESS_FLAG_NAME_CONFIG);
 
@@ -191,7 +184,7 @@ public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transfo
 
   protected abstract R newRecord(R record, Schema updatedSchema, Object updatedValue);
 
-  public static class Key<R extends ConnectRecord<R>> extends VelocityEval<R> {
+  public static class Key<R extends ConnectRecord<R>> extends JsonataEval<R> {
     @Override
     protected Schema operatingSchema(R record) {
       return record.keySchema();
@@ -209,7 +202,7 @@ public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transfo
     }
   }
 
-  public static class Value<R extends ConnectRecord<R>> extends VelocityEval<R> {
+  public static class Value<R extends ConnectRecord<R>> extends JsonataEval<R> {
     @Override
     protected Schema operatingSchema(R record) {
       return record.valueSchema();
