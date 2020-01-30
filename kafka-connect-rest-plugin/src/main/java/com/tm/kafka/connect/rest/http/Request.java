@@ -55,7 +55,6 @@ public class Request {
 
     private String url;
     private String method;
-    private Map<String, String> headers;
 
     public RequestFactory(String url, String method) {
       this.url = url;
@@ -68,8 +67,8 @@ public class Request {
 
     public Request createRequest(String payload, Map<String, String> headers) {
       // TODO - This is a bit of a hack.  How the value is sent to the REST endpoint should be explicitly configured
-      //        It is possible that you may still want to send it as a request parameter for a POST request,
-      //        and the name(s) of the parameter(s) being sent should be determined by config or the payload its self.
+      // It is possible that you may still want to send it as a request parameter for a POST request,
+      // and the name(s) of the parameter(s) being sent should be determined by config or the payload its self.
       if("GET".equalsIgnoreCase(method)) {
         return new Request(url, method, null, Collections.singletonMap("value", payload), headers);
       } else {

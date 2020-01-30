@@ -69,7 +69,13 @@ public class RestTaskTest {
         .withBody(RESPONSE_BODY)));
 
     Map<String, String> props;
-    props = new HashMap<String, String>() {{
+    props = new HashMap<String, String>() {
+      /**
+      *
+      */
+      private static final long serialVersionUID = -7527818904366177641L;
+
+      {
       put(RestSourceConnectorConfig.SOURCE_METHOD_CONFIG, METHOD);
       put(RestSourceConnectorConfig.SOURCE_URL_CONFIG, URL);
       put(ConstantPayloadGeneratorConfig.REQUEST_BODY_CONFIG, DATA);
@@ -112,7 +118,13 @@ public class RestTaskTest {
 
     wireMockRule.resetRequests();
 
-    props = new HashMap<String, String>() {{
+    props = new HashMap<String, String>() {
+      /**
+      *
+      */
+      
+      private static final long serialVersionUID = -5907635553106654131L;
+      {
       put(RestSinkConnectorConfig.SINK_METHOD_CONFIG, METHOD);
       put(RestSinkConnectorConfig.SINK_URL_CONFIG, URL);
       put(RestSinkConnectorConfig.SINK_HEADERS_LIST_CONFIG, HEADERS_LIST);

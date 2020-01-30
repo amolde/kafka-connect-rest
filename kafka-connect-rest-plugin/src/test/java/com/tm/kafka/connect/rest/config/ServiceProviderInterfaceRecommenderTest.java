@@ -1,18 +1,16 @@
 package com.tm.kafka.connect.rest.config;
 
+import static org.hamcrest.Matchers.emptyIterable;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.Assert.assertThat;
+
+import java.util.Collections;
+
 import com.tm.kafka.connect.rest.http.executor.OkHttpRequestExecutor;
 import com.tm.kafka.connect.rest.http.executor.RequestExecutor;
-import org.hamcrest.Matchers;
+
 import org.junit.Test;
-
-import java.text.spi.DateFormatProvider;
-import java.util.Collections;
-import java.util.List;
-import java.util.spi.LocaleServiceProvider;
-import java.util.stream.Collectors;
-
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 
 public class ServiceProviderInterfaceRecommenderTest {
 

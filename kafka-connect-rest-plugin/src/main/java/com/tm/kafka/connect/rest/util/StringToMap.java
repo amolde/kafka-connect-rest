@@ -15,6 +15,7 @@ public class StringToMap {
     update(path.split("\\."), 0, map, update);
   }
 
+  @SuppressWarnings("unchecked")
   private static void update(String[] strHierarchy, int idx, Map<String, Object> map, String update) {
     String key = strHierarchy[idx];
 
@@ -46,6 +47,7 @@ public class StringToMap {
     }
 
     if (map.containsKey(key) && map.get(key) instanceof Map) {
+      @SuppressWarnings("unchecked")
       Map<String, Object> embedded = (Map<String, Object>) map.get(key);
       return extract(strHierarchy, ++idx, embedded);
     } else {
@@ -65,6 +67,7 @@ public class StringToMap {
     }
 
     if (map.containsKey(key) && map.get(key) instanceof Map) {
+      @SuppressWarnings("unchecked")
       Map<String, Object> embedded = (Map<String, Object>) map.get(key);
       remove(strHierarchy, ++idx, embedded);
     }

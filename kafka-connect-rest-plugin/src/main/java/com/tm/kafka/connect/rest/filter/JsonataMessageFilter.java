@@ -1,6 +1,7 @@
 package com.tm.kafka.connect.rest.filter;
 
 import org.apache.kafka.common.Configurable;
+import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.connect.errors.ConnectException;
 import java.io.IOException;
 
@@ -26,7 +27,7 @@ public class JsonataMessageFilter implements MessageFilter, Configurable {
   private ObjectMapper mapper = new ObjectMapper();
 
   @Override
-  public void configure(Map<String, ?> props) throws ConnectException {
+  public void configure(Map<String, ?> props) {
 
     final JsonataMessageFilterConfig config = new JsonataMessageFilterConfig(props);
 
@@ -34,10 +35,10 @@ public class JsonataMessageFilter implements MessageFilter, Configurable {
       expr = Expressions.parse(config.getExpression());
     } catch (ParseException e) {
       log.error(e.getLocalizedMessage(), e);
-      throw new ConnectException(e);
+      throw new ConfigException(e.getLocalizedMessage(), e);
     } catch (EvaluateRuntimeException ere) {
       log.error(ere.getLocalizedMessage(), ere);
-      throw new ConnectException(ere);
+      throw new ConfigException(ere.getLocalizedMessage(), ere);
     }
   }
 

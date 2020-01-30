@@ -1,17 +1,15 @@
 package com.tm.kafka.connect.rest.selector;
 
 
-import com.tm.kafka.connect.rest.VersionUtil;
+import static org.apache.kafka.common.config.ConfigDef.NO_DEFAULT_VALUE;
+
+import java.util.List;
+import java.util.Map;
+
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Importance;
 import org.apache.kafka.common.config.ConfigDef.Type;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.apache.kafka.common.config.ConfigDef.NO_DEFAULT_VALUE;
 
 
 public class SimpleTopicSelectorConfig extends AbstractConfig {

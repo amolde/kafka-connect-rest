@@ -1,11 +1,7 @@
 package com.tm.kafka.connect.rest.config;
 
 import org.apache.kafka.common.config.ConfigException;
-import org.hamcrest.Matchers;
 import org.junit.Test;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
 
 public class InstanceOfValidatorTest {
 

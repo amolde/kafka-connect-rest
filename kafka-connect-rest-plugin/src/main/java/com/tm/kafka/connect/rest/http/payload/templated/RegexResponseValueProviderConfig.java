@@ -19,6 +19,7 @@ public class RegexResponseValueProviderConfig extends AbstractConfig {
     "HTTP request template.  A regex must be defined for each variable and will be run against the HTTP response to " +
     "extract values for the next HTTP request.";
   private static final String RESPONSE_VAR_NAMES_DISPLAY = "Template variables for REST source connector.";
+  @SuppressWarnings("unchecked")
   private static final List<String> RESPONSE_VAR_NAMES_DEFAULT = Collections.EMPTY_LIST;
 
   public static final String RESPONSE_VAR_REGEX_CONFIG = "rest.source.response.var.%s.regex";
@@ -61,6 +62,7 @@ public class RegexResponseValueProviderConfig extends AbstractConfig {
     // This is a bit hacky and there may be a better way of doing it, but I don't know it.
     // We need to create config items dynamically, based on the parameter names,
     // so we need a 2 pass parse of the config.
+    @SuppressWarnings("unchecked")
     List<String> varNames = (List) config.parse(unparsedConfig).get(RESPONSE_VAR_NAMES_CONFIG);
 
     for(String varName : varNames) {

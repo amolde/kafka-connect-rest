@@ -1,23 +1,24 @@
 package com.tm.kafka.connect.rest;
 
+import static com.tm.kafka.connect.rest.metrics.Metrics.RETRIABLE_ERROR_METRIC;
+import static com.tm.kafka.connect.rest.metrics.Metrics.UNRETRIABLE_ERROR_METRIC;
+import static com.tm.kafka.connect.rest.metrics.Metrics.increaseCounter;
+
+import java.util.Collection;
+import java.util.Map;
+
 import com.tm.kafka.connect.rest.filter.MessageFilter;
 import com.tm.kafka.connect.rest.http.Request;
 import com.tm.kafka.connect.rest.http.Response;
 import com.tm.kafka.connect.rest.http.executor.RequestExecutor;
 import com.tm.kafka.connect.rest.http.handler.ResponseHandler;
+
 import org.apache.kafka.connect.errors.RetriableException;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.Map;
-
-import static com.tm.kafka.connect.rest.metrics.Metrics.RETRIABLE_ERROR_METRIC;
-import static com.tm.kafka.connect.rest.metrics.Metrics.UNRETRIABLE_ERROR_METRIC;
-import static com.tm.kafka.connect.rest.metrics.Metrics.increaseCounter;
 
 public class RestSinkTask extends SinkTask {
 
@@ -54,7 +55,6 @@ public class RestSinkTask extends SinkTask {
         try {
           String payload = (String) record.value();
           if(messageFilter != null && !messageFilter.matches(payload)) {
-            log.error("RED RED RED", payload);
             return;
           }
           Request request = requestFactory.createRequest(payload, headers);

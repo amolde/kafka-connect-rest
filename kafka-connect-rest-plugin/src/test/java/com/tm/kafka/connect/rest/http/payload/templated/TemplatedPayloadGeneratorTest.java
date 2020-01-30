@@ -1,26 +1,24 @@
 package com.tm.kafka.connect.rest.http.payload.templated;
 
 
-import com.tm.kafka.connect.rest.RestSinkConnectorConfig;
-import com.tm.kafka.connect.rest.RestSourceConnectorConfig;
-import com.tm.kafka.connect.rest.http.Request;
-import com.tm.kafka.connect.rest.http.Response;
-import com.tm.kafka.connect.rest.http.payload.ConstantPayloadGenerator;
-import com.tm.kafka.connect.rest.http.payload.ConstantPayloadGeneratorConfig;
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.lang.System.currentTimeMillis;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import com.tm.kafka.connect.rest.http.Request;
+import com.tm.kafka.connect.rest.http.Response;
+
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
 
 
 public class TemplatedPayloadGeneratorTest {

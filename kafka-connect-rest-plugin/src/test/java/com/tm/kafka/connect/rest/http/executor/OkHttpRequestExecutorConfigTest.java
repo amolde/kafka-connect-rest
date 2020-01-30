@@ -1,13 +1,11 @@
 package com.tm.kafka.connect.rest.http.executor;
 
-import com.tm.kafka.connect.rest.http.executor.OkHttpRequestExecutorConfig;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
 public class OkHttpRequestExecutorConfigTest {
 

@@ -193,7 +193,7 @@ public class RestSinkConnectorConfig extends AbstractConfig {
         ConfigDef.Width.NONE,
         SINK_DATE_FORMAT_DISPLAY)
 
-        .define(SINK_MESSAGE_FILTER_CONFIG,
+      .define(SINK_MESSAGE_FILTER_CONFIG,
         Type.CLASS,
         SINK_MESSAGE_FILTER_DEFAULT,
         new InstanceOfValidator(MessageFilter.class),

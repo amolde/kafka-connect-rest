@@ -27,6 +27,7 @@ public class TemplatedPayloadGeneratorConfig extends AbstractConfig {
   private static final String REQUEST_PARAMETER_NAMES_DOC = "The HTTP request parameter names that will be sent with each " +
     "REST request. The parameter values should each be defined by a rest.source.param.<param_name>.value entry.";
   private static final String REQUEST_PARAMETER_NAMES_DISPLAY = "HTTP request parameter names for REST source connector.";
+  @SuppressWarnings("unchecked")
   private static final List<String> REQUEST_PARAMETER_NAMES_DEFAULT = Collections.EMPTY_LIST;
 
   public static final String REQUEST_PARAMETER_TEMPLATE_CONFIG = "rest.source.param.%s.template";
@@ -142,6 +143,7 @@ public class TemplatedPayloadGeneratorConfig extends AbstractConfig {
     // This is a bit hacky and there may be a better way of doing it, but I don't know it.
     // We need to create config items dynamically, based on the parameter names,
     // so we need a 2 pass parse of the config.
+    @SuppressWarnings("unchecked")
     List<String> paramNames = (List) config.parse(unparsedConfig).get(REQUEST_PARAMETER_NAMES_CONFIG);
 
     for(String paramName : paramNames) {
