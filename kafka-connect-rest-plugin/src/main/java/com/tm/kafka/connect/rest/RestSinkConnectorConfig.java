@@ -1,15 +1,7 @@
 package com.tm.kafka.connect.rest;
 
 
-import com.tm.kafka.connect.rest.config.*;
-import com.tm.kafka.connect.rest.filter.MessageFilter;
-import com.tm.kafka.connect.rest.http.executor.RequestExecutor;
-import com.tm.kafka.connect.rest.http.handler.DefaultResponseHandler;
-import com.tm.kafka.connect.rest.http.handler.ResponseHandler;
-import org.apache.kafka.common.config.AbstractConfig;
-import org.apache.kafka.common.config.ConfigDef;
-import org.apache.kafka.common.config.ConfigDef.Importance;
-import org.apache.kafka.common.config.ConfigDef.Type;
+import static org.apache.kafka.common.config.ConfigDef.NO_DEFAULT_VALUE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,7 +11,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.apache.kafka.common.config.ConfigDef.NO_DEFAULT_VALUE;
+import com.tm.kafka.connect.rest.http.executor.RequestExecutor;
+import com.tm.kafka.connect.rest.http.handler.DefaultResponseHandler;
+import com.tm.kafka.connect.rest.http.handler.ResponseHandler;
+
+import org.apache.kafka.common.config.AbstractConfig;
+import org.apache.kafka.common.config.ConfigDef;
+import org.apache.kafka.common.config.ConfigDef.Importance;
+import org.apache.kafka.common.config.ConfigDef.Type;
 
 
 public class RestSinkConnectorConfig extends AbstractConfig {
@@ -70,23 +69,26 @@ public class RestSinkConnectorConfig extends AbstractConfig {
   private static final String SINK_DATE_FORMAT_DOC = "Date format for interpolation. The default is MM-dd-yyyy HH:mm:ss.SSS";
   private static final String SINK_DATE_FORMAT_DEFAULT = "MM-dd-yyyy HH:mm:ss.SSS";
 
-  public static final String SINK_MESSAGE_FILTER_CONFIG = "rest.sink.message.filter.class";
-  private static final String SINK_MESSAGE_FILTER_DOC = "The message filter class for REST sink connector.";
-  private static final String SINK_MESSAGE_FILTER_DISPLAY = "Message filter class for REST sink connector.";
-  private static final String SINK_MESSAGE_FILTER_DEFAULT = "com.tm.kafka.connect.rest.filter.PassthroughMessageFilter";
+  public static final String SINK_PAYLOAD_FIELD_NAME_CONFIG = "rest.sink.http.payload.field.name";
+  private static final String SINK_PAYLOAD_FIELD_NAME_DOC = "Field where the payload can be found";
+  private static final String SINK_PAYLOAD_FIELD_NAME_DISPLAY = SINK_PAYLOAD_FIELD_NAME_DOC;
+  private static final String SINK_PAYLOAD_FIELD_NAME_DEFAULT = null;
+
+  public static final String SINK_PROCESS_FLAG_FIELD_NAME_CONFIG = "rest.sink.http.process.flag.field.name";
+  private static final String SINK_PROCESS_FLAG_FIELD_NAME_DOC = "Field where the process flag can be found";
+  private static final String SINK_PROCESS_FLAG_FIELD_NAME_DISPLAY = SINK_PROCESS_FLAG_FIELD_NAME_DOC;
+  private static final String SINK_PROCESS_FLAG_FIELD_NAME_DEFAULT = null;
 
   private static final long SINK_RETRY_BACKOFF_DEFAULT = 5000L;
 
 
   private final Map<String, String> requestHeaders;
   private RequestExecutor requestExecutor;
-  private final MessageFilter messageFilter;
 
   protected RestSinkConnectorConfig(ConfigDef config, Map<String, String> parsedConfig) {
     super(config, parsedConfig);
 
     requestExecutor = this.getConfiguredInstance(SINK_REQUEST_EXECUTOR_CONFIG, RequestExecutor.class);
-    messageFilter = this.getConfiguredInstance(SINK_MESSAGE_FILTER_CONFIG, MessageFilter.class);
 
     requestHeaders = getHeaders().stream()
       .map(a -> a.split(":", 2))
@@ -193,17 +195,25 @@ public class RestSinkConnectorConfig extends AbstractConfig {
         ConfigDef.Width.NONE,
         SINK_DATE_FORMAT_DISPLAY)
 
-      .define(SINK_MESSAGE_FILTER_CONFIG,
-        Type.CLASS,
-        SINK_MESSAGE_FILTER_DEFAULT,
-        new InstanceOfValidator(MessageFilter.class),
-        Importance.HIGH,
-        SINK_MESSAGE_FILTER_DOC,
+      .define(SINK_PAYLOAD_FIELD_NAME_CONFIG,
+        Type.STRING,
+        SINK_PAYLOAD_FIELD_NAME_DEFAULT,
+        Importance.LOW,
+        SINK_PAYLOAD_FIELD_NAME_DOC,
         group,
         ++orderInGroup,
         ConfigDef.Width.SHORT,
-        SINK_MESSAGE_FILTER_DISPLAY,
-        new ServiceProviderInterfaceRecommender<>(MessageFilter.class))
+        SINK_PAYLOAD_FIELD_NAME_DISPLAY)
+
+      .define(SINK_PROCESS_FLAG_FIELD_NAME_CONFIG,
+        Type.STRING,
+        SINK_PROCESS_FLAG_FIELD_NAME_DEFAULT,
+        Importance.LOW,
+        SINK_PROCESS_FLAG_FIELD_NAME_DOC,
+        group,
+        ++orderInGroup,
+        ConfigDef.Width.SHORT,
+        SINK_PROCESS_FLAG_FIELD_NAME_DISPLAY)
       ;
   }
 
@@ -235,8 +245,12 @@ public class RestSinkConnectorConfig extends AbstractConfig {
     return requestExecutor;
   }
 
-  public MessageFilter getMessageFilter() {
-    return messageFilter;
+  public String getPayloadFieldName() {
+    return this.getString(SINK_PAYLOAD_FIELD_NAME_CONFIG);
+  }
+
+  public String getProcessFlagFieldName() {
+    return this.getString(SINK_PROCESS_FLAG_FIELD_NAME_CONFIG);
   }
 
   public ResponseHandler getResponseHandler() {

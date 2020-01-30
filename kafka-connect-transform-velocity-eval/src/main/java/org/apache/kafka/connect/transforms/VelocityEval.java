@@ -1,22 +1,19 @@
 package org.apache.kafka.connect.transforms;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.connect.connector.ConnectRecord;
 import org.apache.kafka.connect.data.Schema;
-import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.transforms.util.SimpleConfig;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Map;
 
 public abstract class VelocityEval<R extends ConnectRecord<R>> implements Transformation<R> {
 
@@ -25,19 +22,18 @@ public abstract class VelocityEval<R extends ConnectRecord<R>> implements Transf
   private VelocityContext globalContext;
   private String template;
 
-  protected ObjectMapper objectMapper = new ObjectMapper();
-  private JsonConverter jsonConverter;
+  private ObjectMapper objectMapper = new ObjectMapper();
 
   private static final String TEMPLATE_CONFIG = "template";
   private static final String TEMPLATE_DOC = "Velocity template.";
 
   private static final String CONTEXT_CONFIG = "context";
-  private static final String CONTEXT_DOC = "JSON string of key value pairs added to Velocity context. "
-      + "E.g. '{\"key1\":\"val1\",\"key2\":2}";
+  private static final String CONTEXT_DOC = "JSON string of key value pairs added to Velocity context. " +
+    "E.g. '{\"key1\":\"val1\",\"key2\":2}";
 
-  private static final ConfigDef CONFIG_DEF = new ConfigDef().define(CONTEXT_CONFIG, ConfigDef.Type.STRING,
-      ConfigDef.NO_DEFAULT_VALUE, ConfigDef.Importance.MEDIUM, CONTEXT_DOC).define(TEMPLATE_CONFIG,
-          ConfigDef.Type.STRING, ConfigDef.NO_DEFAULT_VALUE, ConfigDef.Importance.MEDIUM, TEMPLATE_DOC);
+  private static final ConfigDef CONFIG_DEF = new ConfigDef()
+    .define(CONTEXT_CONFIG, ConfigDef.Type.STRING, ConfigDef.NO_DEFAULT_VALUE, ConfigDef.Importance.MEDIUM, CONTEXT_DOC)
+    .define(TEMPLATE_CONFIG, ConfigDef.Type.STRING, ConfigDef.NO_DEFAULT_VALUE, ConfigDef.Importance.MEDIUM, TEMPLATE_DOC);
 
   @Override
   public void configure(Map<String, ?> props) {
@@ -51,16 +47,6 @@ public abstract class VelocityEval<R extends ConnectRecord<R>> implements Transf
       Velocity.init();
     } finally {
       thread.setContextClassLoader(loader);
-    }
-
-    try {
-      jsonConverter = new JsonConverter();
-      Map<String, Object> converterConfig = new HashMap<>();
-      converterConfig.put("schemas.enable", "false");
-      converterConfig.put("schemas.cache.size", "10");
-      jsonConverter.configure(props, false);
-    } catch (Exception e) {
-      throw new ConfigException(e.getLocalizedMessage(), e);
     }
 
     globalContext = new VelocityContext();
@@ -122,8 +108,8 @@ public abstract class VelocityEval<R extends ConnectRecord<R>> implements Transf
 
     @Override
     protected R newRecord(R record, Schema updatedSchema, Object updatedValue) {
-      return record.newRecord(record.topic(), record.kafkaPartition(), updatedSchema, updatedValue,
-          record.valueSchema(), record.value(), record.timestamp());
+      return record.newRecord(record.topic(), record.kafkaPartition(),
+        updatedSchema, updatedValue, record.valueSchema(), record.value(), record.timestamp());
     }
   }
 
@@ -140,8 +126,8 @@ public abstract class VelocityEval<R extends ConnectRecord<R>> implements Transf
 
     @Override
     protected R newRecord(R record, Schema updatedSchema, Object updatedValue) {
-      return record.newRecord(record.topic(), record.kafkaPartition(), record.keySchema(), record.key(), updatedSchema,
-          updatedValue, record.timestamp());
+      return record.newRecord(record.topic(), record.kafkaPartition(),
+        record.keySchema(), record.key(), updatedSchema, updatedValue, record.timestamp());
     }
   }
 }

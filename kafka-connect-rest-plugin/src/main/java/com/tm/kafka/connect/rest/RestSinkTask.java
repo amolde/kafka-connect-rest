@@ -7,12 +7,12 @@ import static com.tm.kafka.connect.rest.metrics.Metrics.increaseCounter;
 import java.util.Collection;
 import java.util.Map;
 
-import com.tm.kafka.connect.rest.filter.MessageFilter;
 import com.tm.kafka.connect.rest.http.Request;
 import com.tm.kafka.connect.rest.http.Response;
 import com.tm.kafka.connect.rest.http.executor.RequestExecutor;
 import com.tm.kafka.connect.rest.http.handler.ResponseHandler;
 
+import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.RetriableException;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
@@ -31,7 +31,8 @@ public class RestSinkTask extends SinkTask {
   private RequestExecutor executor;
   private ResponseHandler responseHandler;
   private String taskName = "";
-  private MessageFilter messageFilter;
+  private String payloadFieldName = "";
+  private String processFlagFieldName = "";
 
   @Override
   public void start(Map<String, String> map) {
@@ -43,7 +44,8 @@ public class RestSinkTask extends SinkTask {
     maxRetries = connectorConfig.getMaxRetries();
     responseHandler = connectorConfig.getResponseHandler();
     executor = connectorConfig.getRequestExecutor();
-    messageFilter = connectorConfig.getMessageFilter();
+    payloadFieldName = connectorConfig.getPayloadFieldName();
+    processFlagFieldName = connectorConfig.getProcessFlagFieldName();
   }
 
   @Override
@@ -53,8 +55,27 @@ public class RestSinkTask extends SinkTask {
       int retries = maxRetries;
       while (maxRetries < 0 || retries-- >= 0) {
         try {
-          String payload = (String) record.value();
-          if(messageFilter != null && !messageFilter.matches(payload)) {
+          Object value = record.value();
+          String payload = null;
+          boolean processFlag = true;
+          log.error("payloadFieldName:" + payloadFieldName + ";processFlagFieldName:" + processFlagFieldName + ";");
+          if(value instanceof Struct) {
+            log.error("RED RED RED - it's a Struct-");
+          }
+          if(value instanceof String) {
+            log.error("RED RED RED - it's a String");
+          }
+          if(value instanceof Struct && payloadFieldName != null) {
+            payload = ((Struct) value).getString(payloadFieldName);
+            log.error("payload:" + payload);
+            if(processFlagFieldName != null) {
+              processFlag = ((Struct) value).getBoolean(processFlagFieldName);
+            }
+            log.error("processFlag:" + processFlag);
+          } else {
+            payload = String.valueOf(value);
+          }
+          if(!processFlag) {
             return;
           }
           Request request = requestFactory.createRequest(payload, headers);
