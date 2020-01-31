@@ -2,7 +2,6 @@ package org.apache.kafka.connect.transforms;
 
 import static org.apache.kafka.connect.transforms.util.Requirements.requireStruct;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +59,6 @@ public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transfo
   private static Schema resultSchema;
 
   private static final ConfigDef CONFIG_DEF = new ConfigDef()
-
       .define(PROCESS_FLAG_TEMPLATE_CONFIG, ConfigDef.Type.STRING, PROCESS_FLAG_TEMPLATE_DEFAULT,
           ConfigDef.Importance.MEDIUM, PROCESS_FLAG_TEMPLATE_DOC)
 
@@ -100,9 +98,6 @@ public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transfo
     } catch (ScriptException ere) {
       log.error(ere.getLocalizedMessage(), ere);
       throw new ConfigException(ere.getLocalizedMessage(), ere);
-    } catch (FileNotFoundException ere) {
-      log.error(ere.getLocalizedMessage(), ere);
-      throw new ConfigException(ere.getLocalizedMessage(), ere);
     }
 
     resultSchema = SchemaBuilder.struct().name("edu.neu.kafka.transforms.jsonata.result").version(1)
@@ -135,7 +130,6 @@ public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transfo
 
   private boolean getProcessFlag(String jsonPayload) {
     try {
-      log.error("processFlag:" + processFlagTemplateExpr.evaluate(jsonPayload));
       return TRUE.equals(processFlagTemplateExpr.evaluate(jsonPayload));
     } catch (NoSuchMethodException e) {
       log.error(e.getLocalizedMessage(), e);
@@ -153,9 +147,7 @@ public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transfo
     }
 
     String jsonPayload = parseJson(record);
-    log.error("jsonPayload:" + jsonPayload);
     String result = getTransformedJson(jsonPayload);
-    log.error("result:" + result);
     boolean processFlag = getProcessFlag(jsonPayload);
 
     final Struct transformedValue = new Struct(resultSchema);

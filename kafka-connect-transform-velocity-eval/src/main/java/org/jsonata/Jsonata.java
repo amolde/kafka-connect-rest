@@ -1,11 +1,7 @@
 package org.jsonata;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.InputStreamReader;
-import java.net.URL;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -13,14 +9,21 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 public class Jsonata {
-  private ScriptEngine engine;
+  private static ScriptEngine engine;
   Object preparedExpression;
 
-  public Jsonata(String expression) throws NoSuchMethodException, ScriptException, FileNotFoundException {
+  static {
     ScriptEngineManager factory = new ScriptEngineManager();
     engine = factory.getEngineByName("JavaScript");
-    engine.eval(new BufferedReader(
-        new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("jsonata-es5.js"))));
+    try {
+      engine.eval(new BufferedReader(
+        new InputStreamReader(Jsonata.class.getClassLoader().getResourceAsStream("jsonata-es5.js"))));
+    } catch(ScriptException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public Jsonata(String expression) throws NoSuchMethodException, ScriptException {
     preparedExpression = ((Invocable) engine).invokeFunction("jsonata", expression);
   }
 

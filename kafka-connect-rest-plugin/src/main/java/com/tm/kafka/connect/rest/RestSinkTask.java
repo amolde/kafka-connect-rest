@@ -58,20 +58,11 @@ public class RestSinkTask extends SinkTask {
           Object value = record.value();
           String payload = null;
           boolean processFlag = true;
-          log.error("payloadFieldName:" + payloadFieldName + ";processFlagFieldName:" + processFlagFieldName + ";");
-          if(value instanceof Struct) {
-            log.error("RED RED RED - it's a Struct-");
-          }
-          if(value instanceof String) {
-            log.error("RED RED RED - it's a String");
-          }
           if(value instanceof Struct && payloadFieldName != null) {
             payload = String.valueOf(((Struct) value).get(payloadFieldName));
-            log.error("payload:" + payload);
             if(processFlagFieldName != null) {
               processFlag = ((Struct) value).getBoolean(processFlagFieldName);
             }
-            log.error("processFlag:" + processFlag);
           } else {
             payload = String.valueOf(value);
           }
