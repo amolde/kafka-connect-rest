@@ -2,18 +2,14 @@ package org.apache.kafka.connect.transforms;
 
 import static org.apache.kafka.connect.transforms.util.Requirements.requireStruct;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.api.jsonata4java.expressions.EvaluateException;
-import com.api.jsonata4java.expressions.EvaluateRuntimeException;
-import com.api.jsonata4java.expressions.Expressions;
-import com.api.jsonata4java.expressions.ParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import javax.script.ScriptException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.BooleanNode;
 
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigException;
@@ -24,6 +20,7 @@ import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.transforms.util.SimpleConfig;
+import org.jsonata.Jsonata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +35,8 @@ public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transfo
 
   private JsonConverter jsonConverter;
   private ObjectMapper objectMapper = new ObjectMapper();
-  private Expressions templateExpr;
-  private Expressions processFlagTemplateExpr;
+  private Jsonata templateExpr;
+  private Jsonata processFlagTemplateExpr;
 
   private static final String TEMPLATE_CONFIG = "template";
   private static final String TEMPLATE_DEFAULT = "$";
@@ -58,6 +55,7 @@ public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transfo
   private static final String TRANSFORMED_JSON_FIELD_NAME_DOC = "Field name to store the transformed JSON.";
 
   private static final String PURPOSE = "JSONata Transformation";
+  private static final String TRUE = "true";
 
   private static Schema resultSchema;
 
@@ -94,59 +92,55 @@ public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transfo
     processFlagFieldName = config.getString(PROCESS_FLAG_NAME_CONFIG);
 
     try {
-      templateExpr = Expressions.parse(template);
-      processFlagTemplateExpr = Expressions.parse(processFlagTemplate);
-    } catch (ParseException e) {
+      templateExpr = new Jsonata(template);
+      processFlagTemplateExpr = new Jsonata(processFlagTemplate);
+    } catch (NoSuchMethodException e) {
       log.error(e.getLocalizedMessage(), e);
       throw new ConfigException(e.getLocalizedMessage(), e);
-    } catch (EvaluateRuntimeException ere) {
+    } catch (ScriptException ere) {
+      log.error(ere.getLocalizedMessage(), ere);
+      throw new ConfigException(ere.getLocalizedMessage(), ere);
+    } catch (FileNotFoundException ere) {
       log.error(ere.getLocalizedMessage(), ere);
       throw new ConfigException(ere.getLocalizedMessage(), ere);
     }
 
     resultSchema = SchemaBuilder.struct().name("edu.neu.kafka.transforms.jsonata.result").version(1)
-        .doc("Transformed JSON with process flag")
-        .field(transformedJsonFieldName, Schema.STRING_SCHEMA)
-        .field(processFlagFieldName, Schema.BOOLEAN_SCHEMA)
-        .build();
+        .doc("Transformed JSON with process flag").field(transformedJsonFieldName, Schema.STRING_SCHEMA)
+        .field(processFlagFieldName, Schema.BOOLEAN_SCHEMA).build();
   }
 
-  private JsonNode parseJson(R record) {
+  private String parseJson(R record) {
     final Struct value = requireStruct(operatingValue(record), PURPOSE);
     try {
-      JsonNode jsonPayload = objectMapper
-          .readTree(jsonConverter.fromConnectData(record.topic(), record.valueSchema(), value));
-      log.error("BLUE BLUE BLUE:" + jsonPayload.toString());
-      return jsonPayload;
+      return objectMapper.writeValueAsString(
+          objectMapper.readTree(jsonConverter.fromConnectData(record.topic(), record.valueSchema(), value)));
     } catch (IOException e) {
       log.error(e.getLocalizedMessage(), e);
       throw new ConnectException(e);
     }
   }
 
-  private String getTransformedJson(JsonNode jsonPayload) {
+  private String getTransformedJson(String jsonPayload) {
     try {
-      JsonNode result = templateExpr.evaluate(jsonPayload);
-      return objectMapper.writeValueAsString(result);
-    } catch (JsonProcessingException e) {
+      return templateExpr.evaluate(jsonPayload);
+    } catch (NoSuchMethodException e) {
       log.error(e.getLocalizedMessage(), e);
       throw new ConnectException(e);
-    } catch (EvaluateException e) {
+    } catch (ScriptException e) {
       log.error(e.getLocalizedMessage(), e);
       throw new ConnectException(e);
     }
   }
 
-  private boolean getProcessFlag(JsonNode jsonPayload) {
+  private boolean getProcessFlag(String jsonPayload) {
     try {
-      JsonNode result = processFlagTemplateExpr.evaluate(jsonPayload);
-      if (result instanceof BooleanNode) {
-        return ((BooleanNode) result).booleanValue();
-      }
-      log.warn(
-          "The result of the process flag template expression is not a boolean. So not sure what to make of it. Defaulting to process.");
-      return true;
-    } catch (EvaluateException e) {
+      log.error("processFlag:" + processFlagTemplateExpr.evaluate(jsonPayload));
+      return TRUE.equals(processFlagTemplateExpr.evaluate(jsonPayload));
+    } catch (NoSuchMethodException e) {
+      log.error(e.getLocalizedMessage(), e);
+      throw new ConnectException(e);
+    } catch (ScriptException e) {
       log.error(e.getLocalizedMessage(), e);
       throw new ConnectException(e);
     }
@@ -158,8 +152,10 @@ public abstract class JsonataEval<R extends ConnectRecord<R>> implements Transfo
       throw new ConnectException("This transformation does not work when schema is not enabled!");
     }
 
-    JsonNode jsonPayload = parseJson(record);
+    String jsonPayload = parseJson(record);
+    log.error("jsonPayload:" + jsonPayload);
     String result = getTransformedJson(jsonPayload);
+    log.error("result:" + result);
     boolean processFlag = getProcessFlag(jsonPayload);
 
     final Struct transformedValue = new Struct(resultSchema);

@@ -57,12 +57,6 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
-
-    <dependency>
-      <groupId>com.ibm.jsonata4java</groupId>
-      <artifactId>JSONata4Java</artifactId>
-      <version>1.2</version>
-    </dependency>
   </dependencies>
 
   <build>
